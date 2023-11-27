@@ -2,7 +2,7 @@
 
 Python solutions to AOC 23.
 
-[AOC 2022](https://github.com/eaglesearcher/advent-of-code-2022)
+[AOC 2022](https://github.com/eaglesearcher/advent-of-code-2022) - my first year + learning python
 
 # Running solutions
 
