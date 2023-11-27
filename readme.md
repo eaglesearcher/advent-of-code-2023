@@ -15,8 +15,7 @@ Run `python day#.py`
 
 `file_io.new_day(#)` -> spawns a new day#.py file by copying the dayX.py template and updating the day#.
 
-`file_io.read_input(#)` -> grabs input files from `./input/`
-If the file is not found, automatically attempts to pull and create the file `file_io.pull_data()`
+`file_io.read_input(#)` -> grabs input files from `./input/`. If the file is not found, automatically attempts to pull and create the file `file_io.pull_data()`
 
 For automated pulling, update `AOC_YEAR` at the top of `file_io.py` for the current year.
 
@@ -31,6 +30,5 @@ See `scratch.py` for file_io tests and basic daily solution timing.
 # Compatibility
 
 Primarily development in core python with sprinkles of numpy.
-AOC 23 environment:
-python 3.11.5
-numpy 1.24.3
+
+AOC 23 environment: python 3.11.5; numpy 1.24.3
