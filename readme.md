@@ -6,7 +6,7 @@ Python solutions to AOC 23.
 
 # Running solutions
 
-Each day{#}.py is self-contained.
+Each `day{#}.py` is self-contained.
 Run `python day#.py`
 
 # Cloning
@@ -21,7 +21,7 @@ For automated pulling, update `AOC_YEAR` at the top of `file_io.py` for the curr
 
 # Secret Sauce
 
-`algo_util.py` holds commonly reused algo components, but since it is in development throughout the course of the event, the latest is not guarenteed to work with earlier daily solutions (but I try).
+`algo_util.py` collects commonly reused algorithm components, but since it is in development throughout the course of the event, the latest is not guarenteed to work with earlier daily solutions (but I try).
 
 # Examples
 
@@ -29,6 +29,6 @@ See `scratch.py` for file_io tests and basic daily solution timing.
 
 # Compatibility
 
-Primarily development in core python with sprinkles of numpy.
+Primary development in core python with sprinkles of numpy.
 
 AOC 23 environment: python 3.11.5; numpy 1.24.3
