@@ -1,8 +1,7 @@
 from os.path import exists
-from queue import PriorityQueue
 import requests
 
-AOC_YEAR = 2022
+AOC_YEAR = 2023
 
 def read_input(day,in_type = 1):
 
