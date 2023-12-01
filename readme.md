@@ -1,6 +1,6 @@
 # Advent of Code 2023 🎄
 
-Python solutions to AOC 23.
+Python solutions to AOC '23.
 
 [AOC 2022](https://github.com/eaglesearcher/advent-of-code-2022) - my first year + learning python
 
@@ -17,7 +17,7 @@ Run `python day#.py`
 
 `file_io.read_input(#)` -> grabs input files from `./input/`. If the file is not found, automatically attempts to pull and create the file `file_io.pull_data()`
 
-For automated pulling, update `AOC_YEAR` at the top of `file_io.py` for the current year.
+For automated pulling, update `AOC_YEAR` at the top of `file_io.py` for the current year.  You also need to add a file named `cookie.txt` in the input directory, and copy/paste your cookie session info into it for AOC authentication.
 
 # Secret Sauce
 
@@ -31,4 +31,4 @@ See `scratch.py` for file_io tests and basic daily solution timing.
 
 Primary development in core python with sprinkles of numpy.
 
-AOC 23 environment: python 3.11.5; numpy 1.24.3
+AOC '23 environment: python 3.11.5; numpy 1.24.3
