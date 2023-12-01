@@ -10,49 +10,34 @@ def main():
     file_contents = fio.read_input(day_num, input_type)  
     if not file_contents:
         return
-    file_contents = file_contents.split('\n')
-    file_contents = file_contents[0:-1] # trim the ending newline
+    
     # --- add code here! ---
     
     text = file_contents
     
-    def translate_char(chars):
-        if chars == 'one' or chars == 'eno':
-            return '1'
-        if chars == 'two' or chars == 'owt':
-            return '2'
-        if chars == 'three' or chars == 'eerht':
-            return '3'
-        if chars == 'four' or chars == 'ruof':
-            return '4'
-        if chars == 'five' or chars == 'evif':
-            return '5'
-        if chars == 'six' or chars == 'xis':
-            return '6'
-        if chars == 'seven' or chars == 'neves':
-            return '7'
-        if chars == 'eight' or chars == 'thgie':
-            return '8'
-        if chars == 'nine' or chars == 'enin':
-            return '9'
-        else:
-            return chars
-
     value1 = 0
     value2 = 0
     for each_line in text:
-        # print(each_line)
+        # part 1
+        # regex to grab any numbers, take first/last from list
         x1 = re.findall('[0-9]',each_line)
         value1 += int(x1[0] + x1[-1])
-        x2 = re.search('[0-9]|one|two|three|four|five|six|seven|eight|nine',each_line)
-        char1 = translate_char(x2[0])
-        x2 = re.search('[0-9]|eno|owt|eerht|ruof|evif|xis|neves|thgie|enin',each_line[::-1])
-        char2 = translate_char(x2[0])
-        # print(char1, char2)
+        
+        # part 2
+        # separate searches for first & last
+        token = '[0-9]|one|two|three|four|five|six|seven|eight|nine'
+        x2 = re.search(token,each_line)
+        char1 = str(alg.word_to_num(x2[0]))
+
+        # flip the string to find the last occurance
+        # cheap trick to flip the tokens
+        # reuse word_to_num by re-flipping the token
+        token = '[0-9]|eno|owt|eerht|ruof|evif|xis|neves|thgie|enin'
+        x2 = re.search(token,each_line[::-1])
+        char2 = str(alg.word_to_num(x2[0][::-1]))
+
         value2 += int(char1+char2)
     
-
-
     # ----------------------
     
     part1 = value1
@@ -68,6 +53,7 @@ def main():
 
 if __name__ == '__main__':
     x = main()
-    print(x[0])
-    print(f'Part 1: {x[1]}')
-    print(f'Part 2: {x[2]}')
+    if not (x == None):
+        print(x[0])
+        print(f'Part 1: {x[1]}')
+        print(f'Part 2: {x[2]}')

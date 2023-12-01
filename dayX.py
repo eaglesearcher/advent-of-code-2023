@@ -30,6 +30,7 @@ def main():
 
 if __name__ == '__main__':
     x = main()
-    print(x[0])
-    print(f'Part 1: {x[1]}')
-    print(f'Part 2: {x[2]}')
+    if not (x == None):
+        print(x[0])
+        print(f'Part 1: {x[1]}')
+        print(f'Part 2: {x[2]}')

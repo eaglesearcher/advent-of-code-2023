@@ -22,7 +22,7 @@ def read_input(day,in_type = 1):
         file_contents = basic_read(file_name)
     
     # if there is no file, attempt to pull a new one
-    if file_contents == None:
+    if file_contents is None:
         print('File not found, pulling input data')
         pull_input(day)
         file_contents = basic_read(file_name)
@@ -32,6 +32,12 @@ def read_input(day,in_type = 1):
     # if we get the placeholder, send None so that the caller exits properly
     if is_placeholder_text(file_contents):
         file_contents = None
+    
+    if file_contents:
+        # files are always a series of lines
+        # there is always a blank line at the end
+        file_contents = file_contents.split('\n')
+        file_contents = file_contents[0:-1] # trim the ending newline
     
     return file_contents
 
@@ -48,7 +54,7 @@ def is_placeholder_text(file_text):
     if file_text == None:
         return False
     test = file_text.split(' ')
-    if test[0] == 'Please':
+    if test[0] == "Please":
         if test[1] == "don't":
             if test[2] == 'repeatedly':
                 return True
@@ -89,6 +95,11 @@ def new_day(day):
         print('Day already exists!')
         return
 
+    
+    if not exists('dayX.py'):
+        print('dayX template missing!')
+        return
+    
     # open the template
     with open('dayX.py', 'r') as file_container:
         contents = file_container.read()
