@@ -53,7 +53,7 @@ def main():
 
 if __name__ == '__main__':
     x = main()
-    if not (x == None):
+    if x:
         print(x[0])
         print(f'Part 1: {x[1]}')
         print(f'Part 2: {x[2]}')

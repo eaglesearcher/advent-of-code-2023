@@ -1,9 +1,5 @@
 from queue import PriorityQueue
 
-
-
-
-
 class a_star():
     # the priorityQueue object is a tuple of (heuristic, ID, state)
     # unique IDs allow debugging and tie-breaks
