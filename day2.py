@@ -12,57 +12,43 @@ def main():
     
     # --- add code here! ---
         
-    # part 1
-    max_per_color = {'blue':14, 'green':13,'red':12}
+    # part 1 / part 2
+    max_color = {'blue':14, 'green':13,'red':12} # part 1 given
     
-   
-    sum_ids = 0
+    sum_ids = 0 # part 1 answer tracker
+    sum_powers = 0 # part 2 answer tracker
     for game in file_contents:
-        x = game.split(':')
-        this_id = x[0].split(' ')[1]
-        all_draws = x[1].split(';')
-        failed = 0
+        x = game.split(':') # split game id from draws
+        this_id = x[0].split(' ')[1] # split number from 'Game'
+        all_draws = x[1].split(';') #  separate each set of draws
+        
+        impossible = 0 # part 1 comparison tracker
+        min_color = {'blue':0, 'green':0, 'red':0} # part 2 comparison tracker
+        
         for this_draw in all_draws:
             drawn = this_draw[1:].split(', ')
+            # splits apart each draw within a single game
+            # [1:] eliminates leading space
+        
             for each_drawn in drawn:
-                tmp = each_drawn.split(' ')
+                tmp = each_drawn.split(' ') # splits color from value
                 value = int(tmp[0])
                 color = tmp[1]
-                if value > max_per_color[color]:
-                    failed = 1
-                    break
-            if failed:
-                break
-        if failed:
-            continue
-        sum_ids += int(this_id)
-            
-    # part 2
-    sum_powers = 0
-    for game in file_contents:
-        x = game.split(':')
-        this_id = x[0].split(' ')[1]
-        all_draws = x[1].split(';')
-        min_color = {'blue':0, 'green':0, 'red':0}
-
-        for this_draw in all_draws:
-            drawn = this_draw[1:].split(', ')
-            for each_drawn in drawn:
-                tmp = each_drawn.split(' ')
-                value = int(tmp[0])
-                color = tmp[1]
-                if value > min_color[color]:
+                
+                if value > max_color[color]: # part1 -- is game possible
+                    impossible = 1
+                
+                if value > min_color[color]: # part2 -- find min viable cubes
                     min_color[color] = value
                     
+        if not impossible:
+            sum_ids += int(this_id)
+            
         game_power = 1
         for key in min_color:
             game_power *= min_color[key]
-
-
         sum_powers += game_power
-    
-
-
+            
     # ----------------------
     
     part1 = sum_ids
