@@ -78,63 +78,52 @@ def num_to_word(value):
     return token
 
 def get_adj_cells_2d(grid, row_idx, col_idx):
+    # checks if the calling cell is on an edge
+    # adj_dict & adj_ref returns None for out-of-bounds cells
     
     adj_cells = [[None,None,None],[None,None,None],[None,None,None]]
-    adj_dict = {'L':None, 'C': None, 'R':None,
-                'UL':None, 'U':None, 'UR':None,
-                'DL':None,'D':None,'DR':None}
-    adj_ref = {'L':None, 'C': None, 'R':None,
-                'UL':None, 'U':None, 'UR':None,
-                'DL':None,'D':None,'DR':None}
     # above left, above, above right
     # left, This, right
     # below left, below, below right
-    
-    # checks if the calling cell is on an edge
-    # adj_dict & adj_ref returns None for out-of-bounds cells
 
     max_rows = len(grid)
     max_cols = len(grid[row_idx])
     
-    if col_idx > 0:
-        adj_cells[1][0] = grid[row_idx][col_idx - 1]
-        adj_dict['L'] = grid[row_idx][col_idx - 1]
-        adj_ref['L'] = (row_idx, col_idx - 1)
-    
-    if col_idx < max_rows - 1:
-        adj_cells[1][2] = grid[row_idx][col_idx + 1]
-        adj_dict['R'] = grid[row_idx][col_idx + 1]
-        adj_ref['R'] = (row_idx, col_idx + 1)
-    
-    if row_idx > 0: # not on the first row
-        adj_cells[0][1] = grid[row_idx - 1][col_idx]
-        adj_dict['U'] = grid[row_idx - 1][col_idx]
-        adj_ref['U'] = (row_idx - 1, col_idx)
-        
-        if col_idx > 0: # not on the first col
-            adj_cells[0][0] = grid[row_idx - 1][col_idx - 1]
-            adj_dict['UL'] = grid[row_idx - 1][col_idx - 1]
-            adj_ref['UL'] = (row_idx - 1, col_idx - 1)
-        
-        if col_idx < max_cols - 1:
-            adj_cells[0][2] = grid[row_idx - 1][col_idx + 1]
-            adj_dict['UR'] = grid[row_idx - 1][col_idx + 1]
-            adj_ref['UR'] = (row_idx - 1, col_idx + 1)
+    # loop through neighbors
+    shift = [-1, 0, 1]
+    for row_shift in shift:
+        new_row = row_idx + row_shift
+        if new_row >= 0 and new_row <= max_rows-1:
+            for col_shift in shift:
+                new_col = col_idx + col_shift
+                if new_col >= 0 and new_col <= max_cols-1:
+                    adj_cells[row_shift+1][col_shift+1] = grid[new_row][new_col]
 
-    if row_idx < max_rows - 1: # not on the last row
-        adj_cells[2][1] = grid[row_idx + 1][col_idx]
-        adj_dict['D'] =  grid[row_idx + 1][col_idx]
-        adj_ref['D'] = (row_idx + 1, col_idx)
-        
-        if col_idx > 0: # not on the first col
-            adj_cells[2][0] = grid[row_idx + 1][col_idx - 1]
-            adj_dict['DL'] = grid[row_idx + 1][col_idx - 1]
-            adj_ref['DL'] = (row_idx + 1, col_idx - 1)
-        
-        if col_idx < max_cols - 1:
-            adj_cells[2][2] = grid[row_idx + 1][col_idx + 1]
-            adj_dict['DR'] = grid[row_idx + 1][col_idx + 1]
-            adj_ref['DR'] = (row_idx + 1, col_idx + 1)
+    # convert to easy dicts
+    adj_dict = {
+                'UL':adj_cells[0][0], 'U':adj_cells[0][1], 'UR':adj_cells[0][2],
+                'L':adj_cells[1][0], 'C': adj_cells[1][1], 'R':adj_cells[1][2],
+                'DL':adj_cells[2][0], 'D':adj_cells[2][1], 'DR':adj_cells[2][2]
+                }
+    
+    adj_ref = {
+                'UL':(row_idx - 1, col_idx - 1),
+                'U':(row_idx - 1, col_idx),
+                'UR':(row_idx - 1, col_idx + 1),
+                'L':(row_idx, col_idx - 1),
+                'C':(row_idx, col_idx),
+                'R':(row_idx, col_idx + 1),
+                'DL':(row_idx + 1, col_idx - 1),
+                'D':(row_idx + 1, col_idx),
+                'DR':(row_idx + 1, col_idx + 1),
+                }
+    
+    # remove out of bounds by comparing ot adj_dict
+    key_list = ['UL', 'U', 'UR', 'L', 'C', 'R', 'DL', 'D', 'DR']
+    for key in key_list:
+        if not adj_dict[key]:
+            adj_ref[key] = None
+    
     
     return adj_dict, adj_ref
 
