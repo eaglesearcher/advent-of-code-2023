@@ -23,18 +23,12 @@ def main():
     # loop through every game
     for idx, card in enumerate(file_contents):
         tmp = card.split(':')[1].split('|')
-        winning_nums = set(tmp[0].split(' '))
-        winning_nums.remove('') # remove double-space clutter
-        card_nums = set(tmp[1].split(' '))
-        card_nums.remove('')
+        winning_nums = set(tmp[0].split())
+        card_nums = set(tmp[1].split())
         
         # count wins on the card
-        count_wins = 0
-        for num in winning_nums:
-            # compare winning nums to card
-            if num in card_nums:
-                count_wins += 1
-                
+        count_wins = len(winning_nums.intersection(card_nums))
+        
         # score processing
         if count_wins > 0: # only score if wins > 0
             # part 1: each win doubles the value of the card
