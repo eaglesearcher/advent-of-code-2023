@@ -11,35 +11,48 @@ def main():
         return
     
     # --- add code here! ---
-    num_cards = len(file_contents)
-    count_cards = [1 for i in range(num_cards)]
+    max_cards = len(file_contents)
     
-    winnings = 0
+    # part 1: sum all winnings
+    total_winnings = 0
+    
+    # part 2: count all the cards
+    # starts with 1 of every card
+    count_cards = [1 for i in range(max_cards)]
+    
+    # loop through every game
     for idx, card in enumerate(file_contents):
         tmp = card.split(':')[1].split('|')
         winning_nums = set(tmp[0].split(' '))
-        winning_nums.remove('')
+        winning_nums.remove('') # remove double-space clutter
         card_nums = set(tmp[1].split(' '))
         card_nums.remove('')
         
+        # count wins on the card
         count_wins = 0
         for num in winning_nums:
+            # compare winning nums to card
             if num in card_nums:
                 count_wins += 1
-                # print(num)
-        if count_wins > 0:
-            winnings += 2**(count_wins - 1)
+                
+        # score processing
+        if count_wins > 0: # only score if wins > 0
+            # part 1: each win doubles the value of the card
+            total_winnings += 2**(count_wins - 1)
+            
+            # part 2: each win sequentially awards the next card
             for inc in range(count_wins):
                 new_card_idx = idx + inc + 1
-                if new_card_idx < num_cards:
+                if new_card_idx < max_cards:
+                    # we may have multiple copies of this card
+                    # (won from previous cards)
+                    # this awards multiple copies of following cards
                     count_cards[new_card_idx] += count_cards[idx]
     
-        
     # ----------------------
     
-    part1 = winnings
+    part1 = total_winnings
     part2 = sum(count_cards)
-
 
     if input_type == 1:
         in_txt = 'Full Input'
