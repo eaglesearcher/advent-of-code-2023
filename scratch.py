@@ -1,12 +1,12 @@
-# import time
+import time
 import file_io as fio
 # import algo_util as alg
-# import day1 as daily
+import day5 as daily
 
 if __name__ == '__main__':
     pass
 
-    # --- test new day function ---
+    # --- run new day function ---
     fio.new_day(5)
 
     # --- test pull function ---
@@ -18,15 +18,19 @@ if __name__ == '__main__':
     # print('Results', x)
     
     # --- time the daily solution --- 
-    # t0 = time.time()
+    
     # x = daily.main()
     # print(x[0])
     # print(f'Part 1: {x[1]}')
     # print(f'Part 2: {x[2]}')
+    
+    # n = 1000
+    
+    # t0 = time.time()
+    # for __ in range(n): daily.main()
     # t1 = time.time()
-
-    # dt = (t1-t0)*1000
-    # print('Runtime = ', int(dt), 'msec')
-    # print('Runtime = ', int(dt)/1000, 'sec')
-    # print('Runtime = ', int(dt)/1000000, 'msec')
-
+    
+    # dt = (t1-t0)/n # seconds / run
+    # # print(f'Runtime = {dt:.2f} sec (average over {n} runs')
+    # print(f'Runtime = {dt*1000:.2f} ms (average over {n} runs')
+    
