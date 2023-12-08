@@ -1,17 +1,15 @@
-import numpy as np
+# import numpy as np
 import file_io as fio
-import algo_util as alg
-from operator import itemgetter
+# import algo_util as alg
+# from operator import itemgetter
 
 day_num = 7
 input_type = 1 # 0 = test, 1 = input
 
 def get_hand_type(hand, part = 1):
-    
-    # 5K:7, 4K:6, FH:5, 3K:4, 2P:3, 1P:2, High:1
-    hand_counts = {}
         
     # count each type of card in hand
+    hand_counts = {}
     for card in hand:
         if card in hand_counts:
             hand_counts[card] += 1
@@ -20,16 +18,14 @@ def get_hand_type(hand, part = 1):
     
     counts = sorted(hand_counts.values(), reverse = True)
     
-    if part == 2 and 'J' in hand_counts:
-        # remove jokers, check edge case, resort and add to best
+    if part == 2 and 'J' in hand_counts and hand_counts['J']<5:
+        # remove jokers, resort and add to best
+        # don't need to do joker check for 5 J's -> already 5K
         jokers = hand_counts.pop('J')
-        
-        if jokers == 5: # covers the JJJJJ case (no other cards)
-            hand_type = 7
-        else:
-            counts = sorted(hand_counts.values(), reverse = True)
-            counts[0] += jokers # jokers always modify the best 
+        counts = sorted(hand_counts.values(), reverse = True)
+        counts[0] += jokers # jokers always modify the best 
 
+    # 5K:7, 4K:6, FH:5, 3K:4, 2P:3, 1P:2, High:1
     if counts[0] == 5: # five of a kind
         hand_type = 7
     elif counts[0] == 4: # four of a kind
@@ -48,7 +44,7 @@ def get_hand_type(hand, part = 1):
     return hand_type
 
 def init_card_values(part = 1):
-    if part == 2: # J = jokers worth less
+    if part == 2: # J = jokers, worth less
         cards = 'AKQT98765432J'
     else: # default to part 1 (J is jack)
         cards = 'AKQJT98765432'
