@@ -6,6 +6,50 @@ import re
 day_num = 12
 input_type = 1 # 0 = test, 1 = input
 
+def get_combos(spring, num):
+    # assume that only one sequence considered for this chunk
+    # assume the sequence is preceded by .
+    # the input spring should never have a . in it, only # or ?
+    
+    # go through a few shortcuts to avoid actual counting
+    
+    if len(spring) == num:
+        # only one possibility (valid due to [#?] assumption
+        return 1
+
+    if '#' not in spring:
+        # all wildcards -> maximum number of combos
+        return len(spring)-num+1
+
+    x =  re.search('#'*num, spring)
+    if x:
+        # hard match, there can be only 1
+        return 1
+    
+    # do the slide, starting num spots back from the first #
+    x = re.search('#', spring)
+    first_idx = max(x.start() - num + 1,0)
+    
+    count = 0
+    for i in range(first_idx, len(spring)):
+        pre = spring[:i]
+        match = spring[i:i+num]
+        post = spring[i+num:]
+        # print(i, num, 'first', spring[:i], 'match', spring[i:i+num],'post', spring[i+num:])
+        
+        if not '#' in pre and not '#' in post and len(match) == num:
+            # all wildcard case already resolved, so there is at least 1 #
+            # if that # shows up in preceding or post, that won't work            
+            count += 1
+    if count > 0:
+        return count
+
+    # I don't know how you got here
+    print('PROBLEMS')
+    return None
+
+
+
 def pattern_match(spring, check):
     # assume that spring[0] is # --> it automatically starts the next check sequence
     # assume that the index before spring[0] is either begining of string or [.]
@@ -41,7 +85,6 @@ def contains_pattern(spring, checknum):
     test_str = spring.replace('?','.').split('.')
     test = [len(i) for i in test_str]
     return checknum in test
-
 
 def hashcheck(spring):
     # assume all ? are #
@@ -140,6 +183,8 @@ def main():
     all_hashes = [[int(i) for i in line.split()[1].split(',')] for line in file_contents]
     all_sum = [sum(i) for i in all_hashes]
 
+
+    # full input 3 is the nasty one ??????#????????
     idx = 3
     spring = all_springs[idx]
     check = all_hashes[idx]
@@ -165,28 +210,56 @@ def main():
     test_check = check
     
     # print(sorted(test_check, reverse=True))
-    
-    
-    new_spring = spring
-    test_spring = new_spring
-    for value in sorted(test_check, reverse=True):
-        x = re.search('[.?]'+'#'*value+'[.?]',test_spring)
-        if x:
-            a = x.span()[0]
-            b = x.span()[1]
-            
-            if x.group()[0] == '?':
-                new_spring = new_spring[:a] + '.'+ new_spring[a+1:]
-            
-            if x.group()[-1] == '?':
-                new_spring = new_spring[:b-1] + '.'+ new_spring[b:]
+    spring = spring+spring
+    check = [7,2,7,2]
+    test_check = check[0]
+    for i in range(len(spring)):
+        # since we are exactly matching the test sequence
+        # ASSUMES immediate prior and after are .
+        preceding = spring[:i]
+        match = spring[i:i+test_check+1]
+        post = spring[i+test_check+1:]
         
-            test_spring = test_spring[:a] + '.'*(b-a) + test_spring[b:]
-        else:
+        if '#' in preceding:
+            # this sequence can't after another
             break
+        if len(match) < test_check:
+            # rolling over the ends of the string
+            break
+        if len(post) < sum(check[1:])+len(check[1:]):
+            # remaining string not long enough to accomodate remaining sequences
+            break
+        # print(preceding, match, post)
     
-    print(new_spring)
-    print(test_spring)
+    
+    test_spring = '????#???'
+    checknum = 3
+    x = get_combos(test_spring, checknum)
+    print(test_spring, x)
+    
+    
+    
+    
+    # new_spring = spring
+    # test_spring = new_spring
+    # for value in sorted(test_check, reverse=True):
+    #     x = re.search('[.?]'+'#'*value+'[.?]',test_spring)
+    #     if x:
+    #         a = x.span()[0]
+    #         b = x.span()[1]
+            
+    #         if x.group()[0] == '?':
+    #             new_spring = new_spring[:a] + '.'+ new_spring[a+1:]
+            
+    #         if x.group()[-1] == '?':
+    #             new_spring = new_spring[:b-1] + '.'+ new_spring[b:]
+        
+    #         test_spring = test_spring[:a] + '.'*(b-a) + test_spring[b:]
+    #     else:
+    #         break
+    
+    # print(new_spring)
+    # print(test_spring)
         
     
     
