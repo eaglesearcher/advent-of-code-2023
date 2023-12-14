@@ -1,13 +1,13 @@
 import time
 import file_io as fio
 # import algo_util as alg
-import day12 as daily
+import day13 as daily
 
 if __name__ == '__main__':
     pass
 
     # --- run new day function ---
-    # fio.new_day(12)
+    # fio.new_day(13)
 
     # --- test pull function ---
     # fio.pull_input(1, 2022)
