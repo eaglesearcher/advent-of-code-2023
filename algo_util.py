@@ -127,5 +127,42 @@ def get_adj_cells_2d(grid, row_idx, col_idx):
     
     return adj_dict, adj_ref
 
+def cycle_detect(input_list, n, print_samples = 0):
+    cycle_idx = None
+    new_dict = {}
+    # hash each new sequence
+    # when you see it again, you've found a cycle
+    # likely need a reasonably sizable input_list (at least 10-100x*delta?)
+    # should be guarenteed to work if n > delta
+    for i in range(len(input_list)-n-1):
+        new_str = str(input_list[i:i+n])
+        if new_str in new_dict: # found a match
+            cycle_idx = (new_dict[new_str],i)
+            break
+        else:
+            new_dict[new_str] = i
+    
+    cycle_list = None
+    # print first x cycles for eyeball check
+    if cycle_idx != None:
+        x0 = cycle_idx[0]
+        x1 = cycle_idx[1]
+        delta = x1-x0  
+        cycle_parameters = (x0, delta)
+        if print_samples >0:
+            for i in range(print_samples):
+                cycle_list = input_list[x0+delta*i:x1+delta*i]
+                print(cycle_list)
+        else:
+            cycle_list = input_list[x0:x1]
+    else:
+        print('No cycle found! Increase n or size of input')
+    return cycle_list, cycle_parameters
 
+def extract_cycle_value(cycle_list, cycle_parameters, goal_number):
+    x0 = cycle_parameters[0]
+    delta = cycle_parameters[1]
+    # delta = x1-x0
+    goal_idx = (goal_number-x0-1) % delta
+    return cycle_list[goal_idx]
 
