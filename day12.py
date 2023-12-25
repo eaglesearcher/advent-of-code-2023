@@ -6,6 +6,9 @@ import re
 day_num = 12
 input_type = 1 # 0 = test, 1 = input
 
+cheater_dict = {}
+
+
 def get_combos(spring, num):
     # assume that only one sequence considered for this chunk
     # assume the sequence is preceded by .
@@ -13,8 +16,9 @@ def get_combos(spring, num):
     
     # go through a few shortcuts to avoid actual counting
     
-    if len(spring) == num:
+    if len(spring) == num or num == 0:
         # only one possibility (valid due to [#?] assumption
+        # also if num = 0, they must all be [.]
         return 1
 
     if '#' not in spring:
@@ -45,8 +49,8 @@ def get_combos(spring, num):
         return count
 
     # I don't know how you got here
-    print('PROBLEMS')
-    return None
+    # print('PROBLEMS')
+    return 0
 
 
 
@@ -88,20 +92,9 @@ def contains_pattern(spring, checknum):
 
 def hashcheck(spring):
     # assume all ? are #
-    # if not haswildcard(spring): # exact hash
     x = [len(i) for i in spring.split('.')]
     while 0 in x:
         x.remove(0)
-    # else:
-    #     teststr = ''
-    #     for c in spring:
-    #         if c == '?':
-    #             teststr += '.'
-    #         else:
-    #             teststr += c
-    #     x = [len(i) for i in teststr.split('.')]
-    #     while 0 in x:
-    #         x.remove(0)
     return x
 
 def hashcount(spring):
@@ -132,13 +125,12 @@ def haswildcard(spring):
 
 def replace_next_q(spring):
     idx = spring.index('?')
-    option1 = spring[:idx]+'#'+spring[idx+1:]
-    option2 = spring[:idx]+'.'+spring[idx+1:]
+    option1 = spring[:idx]+'.'+spring[idx+1:]
+    option2 = spring[:idx]+'#'+spring[idx+1:]
     return [option1, option2]
 
 # recursive approach - faster
 def parse_spring(spring, check, valid=[]):
-    # print(spring, hashcheck(spring)[0], check[0], hash_scan(spring))
     checksum = sum(check)
     if haswildcard(spring):
         lb,ub = hashcount(spring)
@@ -155,21 +147,271 @@ def parse_spring(spring, check, valid=[]):
     
     return valid
 
-# # queue approach - a bit slower?
-def parse_spring_queue(spring, check):
-    valid = []
-    checksum = sum(check)
-    to_be_evaluated = [spring]
-    while(len(to_be_evaluated) > 0):
-        next_branch = to_be_evaluated.pop()
-        options = replace_next_q(next_branch)
-        for test in options:
-            lb,ub = hashcount(test)
-            if haswildcard(test) and lb <= checksum and ub >= checksum:
-                to_be_evaluated.append(test)
-            if not haswildcard(test) and hashcheck(test) == check:
-                valid.append(test)
-    return valid
+def first_dot(spring):
+    x = re.search('[.]', spring)
+    if x:
+        return x.start()
+    return None
+
+def first_hash(spring):
+    x = re.search('[#]', spring)
+    if x:
+        return x.start()
+    return None
+
+
+def trim_leading_dots(spring):
+    x = re.search('[?|#]', spring)
+    if x:
+        return spring[x.start():]
+    return spring
+
+
+def check_len_verify(spring, check):
+    # must be at least enough chars left for check with joining [.]
+    current_check_minlen = sum(check) + len(check) - 1
+    check_len = current_check_minlen <= len(spring)
+    
+    # count the #? in the string
+    current_lb, current_ub = hashcount(spring)            
+    
+    # sum(check) must also be less than the max possible hashes
+    check_ub = sum(check) <= current_ub
+    
+    # count hashes, sum(check) must be at least greater than the min. hashes
+    check_lb = sum(check) >= current_lb
+
+    return check_len, check_lb, check_ub
+
+
+def spring_search(spring, check):
+    # print('New search', spring, check)
+    
+    if len(check) == 0:
+        if '#' in spring: # this case never triggers? -- good?
+            return 0
+        else: # this one does -> empty check with (non-#) string remaining
+            return 1
+    
+    # dict hash short-circuit
+    cheater_key = (spring, str(check))
+    if cheater_key in cheater_dict:
+        count = cheater_dict[cheater_key]
+        return count
+
+    if '.' in spring: # dots exist in input, so we can break it up easily
+        # iterate through what checks fit in the first segment
+        max_len = first_dot(spring)    
+        spring_part = spring[:max_len]
+        remaining = spring[max_len+1:] # skip the dot
+        
+        sum_valid = 0
+        for i in range(len(check)+1):
+            current_check = check[:i]
+            future_check = check[i:]
+            
+            # minor efficiency short-circuit
+            if future_check == [] and '#' in remaining:
+                break
+            
+            # do short-circuit length checks on current/future check
+            check_len_current, check_lb_current, check_ub_current = check_len_verify(spring_part, current_check)
+            
+            # if not check_len_current or not check_lb_current or not check_ub_current:
+            #     continue
+            
+            # current_check is getting larger relative to current spring
+            if not check_len_current or not check_ub_current:
+                break
+            if not check_lb_current:
+                continue
+            
+            check_len_future, check_lb_future, check_ub_future = check_len_verify(remaining, future_check)
+            
+            # if not check_len or not check_lb or not check_ub:
+            #     continue
+            
+            # future_check is getting smaller relative to remaining
+            if not check_lb_future:
+                break
+            if not check_len_future or not check_ub_future:
+                continue
+
+            # find the number of combos for the current sequence
+            cheater_key = (spring_part, str(current_check))
+            if cheater_key in cheater_dict:
+                num_combos = cheater_dict[cheater_key]
+            else:
+                num_combos = spring_search(spring_part, current_check)
+                cheater_dict[cheater_key] = num_combos
+            
+            if future_check == []:
+                sum_valid += num_combos*1
+                continue
+            else:
+                new_spring = trim_leading_dots(remaining)
+                cheater_key = (new_spring, str(future_check))
+                if cheater_key in cheater_dict:
+                    recursed_combos = cheater_dict[cheater_key]
+                else:
+                    recursed_combos = spring_search(new_spring, future_check)
+                    cheater_dict[cheater_key] = recursed_combos
+                
+                sum_valid += num_combos*recursed_combos
+                continue
+                
+    else: # no dots in the string!
+        # iterate through segments that work for the first check
+        
+        # can use a very quick method for len(check) = 1
+        if len(check) == 1:
+            sum_valid = get_combos(spring, check[0])
+            cheater_key = (spring, str(check))
+            cheater_dict[cheater_key] = sum_valid
+            return sum_valid
+        
+        # # leading check trim trick
+        # new_spring = ''
+        # while new_spring != spring:
+        #     new_spring, check = leading_check_trick(spring, check)
+        #     spring = new_spring
+        #     if check == []: # it's possible we trimmed off all the checks
+        #         # doesn't seem to ever occur
+        #         # print('overtrimmed??')
+        #         return 1 
+        
+        # we can't break the input into smaller parts, so we need to get smarter
+        # start by doing standard checks
+        check_len, check_lb, check_ub = check_len_verify(spring, check)
+        
+        # short-circuit no valid combos
+        if not check_len or not check_lb or not check_ub:
+            return 0
+
+        # it's possible we trimmed off all but 1 check
+        # in this case, we're better off recursing to avoid the slog below
+        # it actually just takes us a few lines up in the "no dot" case
+        if len(check) == 1:
+            sum_valid = spring_search(spring, check)
+            return sum_valid
+
+        current_check = check[0]
+        future_check = check[1:]
+        
+        # this is really just an expanded case of get_combos()
+        sum_valid = 0
+        for i in range(len(spring)):
+            pre = spring[:i]
+            match = spring[i:i+current_check]
+            remaining = spring[i+current_check:]
+            
+            # if we've passed a # or the current string isn't long enough
+            # then we're done here            
+            if '#' in pre or len(match) < current_check:
+                break
+            
+            # if the next char is a #, guarenteed not to be a valid solution
+            # check only matters if not end of string
+            if len(remaining) > 0 and remaining[0] == '#':
+                continue
+
+            # "current" spring is automatically (no dots)
+            # exactly 1 possibility for each step in this loop
+            # but remaining still multiplies up as usual
+            
+            if len(remaining) > 1:
+                remaining = remaining[1:]
+
+                check_len, check_lb, check_ub = check_len_verify(remaining, future_check)
+
+                # if not check_len or not check_lb or not check_ub:
+                #     continue
+                
+                # remaining is getting smaller relative to future check
+                if not check_lb:
+                    continue
+                if not check_len or not check_ub:
+                    break
+                
+                cheater_key = (remaining, str(future_check))
+                if cheater_key in cheater_dict:
+                    count = cheater_dict[cheater_key]
+                else:
+                    count = spring_search(remaining, future_check)
+                    cheater_dict[cheater_key] = count
+                sum_valid += 1*count
+                
+            else:
+                # only 1 item left in remaining and it must be a dot
+                break
+            
+    # print('>Combos this level', sum_valid)
+    # print()
+    return sum_valid
+
+
+def strip_biggest(spring, check):
+
+    new_spring = spring
+    check_dict = {}
+    for value in check:
+        if value in check_dict:
+            check_dict[value] += 1
+        else:
+            check_dict[value] = 1
+    # if there are N exact matches to the largest key
+    # replace those matches with X's
+    # otherwise, break, because we can't guarentee anything but the biggest
+    for key in sorted(check_dict.keys(), reverse=True):
+        match_str = '#{'+f'{key}'+'}'
+        x = re.findall(match_str,new_spring)
+        if x != None and len(x) == check_dict[key]:
+            x = re.sub(match_str, 'X'*key, new_spring, check_dict[key])
+            new_spring = x
+        else:
+            break
+    # print(new_spring)
+    # if we did any replacement, check if we can add [.]
+    if 'X' in new_spring:
+        new_spring2 = ''
+        for idx,c in enumerate(new_spring):
+            if c == '?':
+                if (idx-1) >= 0 and new_spring[idx-1] == 'X':
+                    new_spring2 += '.'
+                elif idx+1 < len(new_spring) and new_spring[idx+1] == 'X':
+                    new_spring2 += '.'
+                else:
+                    new_spring2 += '?'
+            else:
+                new_spring2 += c
+        x = re.sub('X','#',new_spring2)
+        new_spring = x
+
+    return new_spring
+
+def leading_check_trick(spring, check):
+    # leading check trick
+    # if first check appears entirely within the first check*2 chars
+    # then all other [?] must be [.]
+    # because you can't fit any other checks in there
+    # there's only one solution in this case
+    # so we return the simplified spring and check as equivalent
+    # and if there's no match, then spring and check flow back out
+    # works great for single # problems
+    
+    # this breaks if for "incorrect" scenarios
+    # check that the next spot is a ? or . to be sure
+    first_check = check[0]
+    spring_lead = spring[:first_check*2]
+    match_str = '#{'+f'{first_check}'+'}'
+    
+    x = re.search(match_str, spring_lead)
+    # print(spring_lead, x.start(), x.end())
+    if x != None and x.end() < len(spring) and spring[x.end()] != '#':
+        spring = spring[x.end()+1:]
+        check = check[1:]
+    # print(new_spring, new_check)
+    return spring, check
 
 
 def main():
@@ -181,184 +423,85 @@ def main():
     
     all_springs = [line.split()[0] for line in file_contents]
     all_hashes = [[int(i) for i in line.split()[1].split(',')] for line in file_contents]
-    all_sum = [sum(i) for i in all_hashes]
+    # all_sum = [sum(i) for i in all_hashes]
 
+    # original part 1 solution (with comparison to updated parsing)
+    valid_sum_p1 = 0
+    for idx, spring in enumerate(all_springs):
+        check = all_hashes[idx]
 
+        # valid = parse_spring_queue(spring, check)
+        # valid_sum += len(valid)
+        # print(len(valid))
+
+        valid2 = spring_search(spring, check)
+        valid_sum_p1 += valid2
+        
+        # # comparison / sanity check
+        # valid = parse_spring(spring, check, [])
+        # # valid_sum_p1 += len(valid)
+        # if max(len(valid),valid2) - min(len(valid), valid2) > 0:
+        #     print(idx, len(valid), valid2)
+        
+    
+    # print(len(all_springs))
+    valid_sum = 0
     # full input 3 is the nasty one ??????#????????
-    idx = 3
-    spring = all_springs[idx]
-    check = all_hashes[idx]
+    for idx in range(len(all_springs)):
+    # for idx in range(10,20):
+    # for idx in range(210,220):
+    # idx = 218
+    # idx = 3
+    # idx = 97
+        # print(idx)
+        spring = all_springs[idx]
+        check = all_hashes[idx]
     
-    # long_spring = ''
-    # long_check = []
-    # for i in range(5):
-    #     long_spring += ('?' + spring)
-    #     for j in check:
-    #         long_check.append(j)
+        # print(spring, check)
     
+        new_spring = ''
+        new_check = []
+        
+        count = 5
+        for i in range(count):
+            new_spring += '?' + spring
+            new_check += check
     
-    # spring = long_spring[1:]
-    # check = long_check
+        spring = new_spring[1:] # trim the leading ? (artifact of lazy join method)
+        check = new_check
+        
+        spring = strip_biggest(spring, check)
+        spring = trim_leading_dots(spring)
+        
+        valid_sum += spring_search(spring, check)
     
-    valid = parse_spring(spring, check, [])
+    # x = parse_spring(spring, check,[])
+    # print('sanity', len(x))
+    
+    print('num keys', len(cheater_dict))
 
-    print(spring)
-    print(check)
-    # print(valid)
-    print('# valid', len(valid))
+
+
+    # print('TESTING')
     
-    test_check = check
+    # # spring = '???????????.???#????'
+    # # check = [1, 1, 2, 3, 3]
+    # spring = '???????????.???#???????????????.???#????'
+    # check = [1, 1, 2, 3, 3, 1, 1, 2, 3, 3]
+    # # spring = '???????????'
+    # # check = [1]
     
-    # print(sorted(test_check, reverse=True))
-    spring = spring+spring
-    check = [7,2,7,2]
-    test_check = check[0]
-    for i in range(len(spring)):
-        # since we are exactly matching the test sequence
-        # ASSUMES immediate prior and after are .
-        preceding = spring[:i]
-        match = spring[i:i+test_check+1]
-        post = spring[i+test_check+1:]
-        
-        if '#' in preceding:
-            # this sequence can't after another
-            break
-        if len(match) < test_check:
-            # rolling over the ends of the string
-            break
-        if len(post) < sum(check[1:])+len(check[1:]):
-            # remaining string not long enough to accomodate remaining sequences
-            break
-        # print(preceding, match, post)
-    
-    
-    test_spring = '????#???'
-    checknum = 3
-    x = get_combos(test_spring, checknum)
-    print(test_spring, x)
-    
-    
-    
-    
-    # new_spring = spring
-    # test_spring = new_spring
-    # for value in sorted(test_check, reverse=True):
-    #     x = re.search('[.?]'+'#'*value+'[.?]',test_spring)
-    #     if x:
-    #         a = x.span()[0]
-    #         b = x.span()[1]
-            
-    #         if x.group()[0] == '?':
-    #             new_spring = new_spring[:a] + '.'+ new_spring[a+1:]
-            
-    #         if x.group()[-1] == '?':
-    #             new_spring = new_spring[:b-1] + '.'+ new_spring[b:]
-        
-    #         test_spring = test_spring[:a] + '.'*(b-a) + test_spring[b:]
-    #     else:
-    #         break
-    
-    # print(new_spring)
-    # print(test_spring)
-        
-    
-    
-    # # test = max(test_check)
-    # # x = contains_pattern(spring, test)
-    # test = 4
-    # spring2 = spring
-    
-    # x = re.search('[.?]'+'#'*test+'[.?]',spring)
-    # if x:
-    #     # print(x.start(), x.span())
-    #     x1 = x.span()[0]
-    #     x2 = x.span()[1]
-    #     print(spring[x1:x2])
-    #     print(x.group())
-        
-    #     if x.group()[0] == '?':
-    #         spring2 = spring2[:x1] + '.'+ spring2[x1+1:]
-        
-    #     if x.group()[-1] == '?':
-    #         spring2 = spring2[:x2-1] + '.'+ spring2[x2:]
-        
-    #     print(spring2)
-    
-    
-    
-    
-    
-    # to_be_eval = [(spring,check,spring)]
-    
-    # next_eval = to_be_eval.pop()
-    # current_spring = next_eval[0]
-    # current_check = next_eval[1]
-    
-    # # x = pattern_match(spring, check)
-    # # print(x)
-    
-    # for start_idx in range(len(spring)):
-    #     x = pattern_match(spring[start_idx:], check)
-    #     print(spring[start_idx],x)
-    
-    
-    # x = pattern_match(spring[1:], check)
+    # print('input', spring, check)
+    # x = spring_search(spring, check)
     # print(x)
     
     
     
-
-    # new strategy --> divide spring into tokens
-    # subproblem search over tokens to build combos
-    # total = sum (branches)
-    # total_branch = product of subtokens
-    #
-    # avoids counting every subtoken
-
-    # # # tokenize spring *as is* -> these are "hard" boundaries
-    # x = spring.split('.')
-    # while '' in x:
-    #     x.remove('')
-    
-    # print(x, len(x))
-
-    # # 1:1 assignment of tokens
-    # if len(x) == len(check):
-    #     y = 1    
-    #     for idx, token in enumerate(x):
-    #         print(token, check[idx])
-    #         valid_list = parse_spring(token, [check[idx]],[])
-    #         print(valid_list)
-    #         y *= len(valid_list)
-    #     print('short', y)
-    # # token matching
-    # else:
-    #     pass
-
-
-    
-    
-
-
-
-    valid_sum = 0
-    # for idx, spring in enumerate(all_springs):
-    #     check = all_hashes[idx]
-
-    #     # valid = parse_spring_queue(spring, check)
-    #     # valid_sum += len(valid)
-    #     # print(len(valid))
-
-    #     valid = parse_spring(spring, check, [])
-    #     # print(valid)
-    #     valid_sum += len(valid)
-    #     # print(len(valid))
-    
     
     # ----------------------
     
-    part1 = valid_sum
-    part2 = 0
+    part1 = valid_sum_p1
+    part2 = valid_sum
 
 
     if input_type == 1:
