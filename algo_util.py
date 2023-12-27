@@ -1,4 +1,9 @@
+'''
+AoC Helper function
+'''
+
 from queue import PriorityQueue
+import numpy as np
 
 class a_star():
     # the priorityQueue object is a tuple of (heuristic, ID, state)
@@ -43,7 +48,11 @@ def manhat(pos1, pos2):
     x2 = pos2[0]
     y2 = pos2[1]
     return max(x1,x2)-min(x1,x2)+max(y1,y2)-min(y1,y2)
+
     
+def hex2dec(input_hex):
+    # input_hex can be a string
+    return int(input_hex,16)
 
 
 def word_to_num(token):
@@ -174,4 +183,39 @@ def extract_cycle_value(cycle_list, cycle_parameters, goal_number):
     # delta = x1-x0
     goal_idx = (goal_number-x0-1) % delta
     return cycle_list[goal_idx]
+
+
+def shoelace(point_list):
+    # planar simple polygon, positively oriented (CCW)
+    # CCW vs CW doesn't matter if take abs(result)
+
+    # assumes that point_list is a list() of (x,y) tuples
+
+
+    # by adopting x = r and y = c, CCW will match CCW when
+    # printing the array in a standard fashion (+C going right; +R going down)
+
+    # add the first point to the end for simplicity
+    # but check first, just in case
+    if point_list[0] != point_list[-1]:
+        point_list.append(point_list[0])
+
+    x = []
+    y = []
+    for pt in point_list:
+        x.append(pt[0]*1.0) # 'r', use fp in case of big numbers
+        y.append(pt[1]*1.0) # 'c', use fp in case of big numbers
+        
+    # numpy arrays are convenient for indexed multiplies
+    x = np.asarray(x)
+    y = np.asarray(y)
+    
+    a = x[:-1]*y[1:] # x1*y2, x2*y3, ... xN*y1
+    b = y[:-1]*x[1:] # x2*y1, x3*y2, ... x1*yN
+        
+    # add areas incrementally to reduce overflow potential
+    sum_area = 0.0
+    for idx in range(len(a)):
+        sum_area += 0.5*(a[idx] - b[idx])
+    return np.abs(sum_area)
 
