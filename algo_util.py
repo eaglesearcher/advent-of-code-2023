@@ -11,8 +11,8 @@ class a_star():
     
     def add_child(self, heuristic, state):
         # assumes "smaller" is better (distance)
-        # PQ gets the highest value, so add heuristic as negative
-        self.prospects.put((-heuristic, self.next_id, state))
+        # PQ gets the lowest value
+        self.prospects.put((heuristic, self.next_id, state))
         self.next_id += 1
         return
     
@@ -36,6 +36,15 @@ class a_star():
         #       add each to queue (add_child)
         # if no winner, print debug (top 2 remaining in queue)
     
+
+def manhat(pos1, pos2):
+    x1 = pos1[0]
+    y1 = pos1[1]
+    x2 = pos2[0]
+    y2 = pos2[1]
+    return max(x1,x2)-min(x1,x2)+max(y1,y2)-min(y1,y2)
+    
+
 
 def word_to_num(token):
     word_dict = {
