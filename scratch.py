@@ -7,7 +7,7 @@ if __name__ == '__main__':
     pass
 
     # --- run new day function ---
-    fio.new_day(18)
+    fio.new_day(19)
 
     # --- test pull function ---
     # fio.pull_input(1, 2022)
