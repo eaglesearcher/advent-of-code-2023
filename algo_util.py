@@ -161,6 +161,7 @@ def cycle_detect(input_list, n, print_samples = 0):
             new_dict[new_str] = i
     
     cycle_list = None
+    cycle_parameters = None
     # print first x cycles for eyeball check
     if cycle_idx != None:
         x0 = cycle_idx[0]
