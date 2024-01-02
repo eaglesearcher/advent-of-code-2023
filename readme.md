@@ -1,6 +1,7 @@
 # Advent of Code 2023 🎄
 
 Python solutions to AOC '23.
+UPDATE 1/2/204: 50*
 
 [AOC 2022](https://github.com/eaglesearcher/advent-of-code-2022) - my first year + learning python
 
