@@ -1,6 +1,9 @@
 # don't want to share our AOC cookies!
 cookie.txt
 
+# AoC creator does not want inputs publicly shared
+/input/day*
+
 # Recommended python.gitignore
 # https://github.com/github/gitignore/blob/main/Python.gitignore
 
